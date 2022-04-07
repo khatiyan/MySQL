@@ -1,0 +1,134 @@
+create database practical3;
+use practical3;
+create table sailors (
+sid int,
+sname varchar(20),
+rating int,
+age float,
+primary key (sid));
+desc sailors;
+
+insert into sailors values (22, 'Dustin', 7, 45.0),
+							(29,'Brutus', 1, 33.0),
+                            (31, 'Lubber', 8, 55.5),
+                            (32, ' Andy', 8, 25.5),
+                            (58, 'Rusty', 10,35.0),
+                            (64, 'Horatio', 7, 35.0),
+                            (71, 'Zorba', 10, 16.0),
+                            (74, ' Horatio', 9, 35.0),
+                            (95, 'Bob', 3, 63.5);
+
+select * from sailors;
+
+create table boats(
+bid int,
+bname varchar(20),
+color varchar(20),
+primary key(bid));
+
+insert into boats values (101, 'Interlake', 'blue'),
+						  (102, 'Interlake', 'red'),
+                          (103, 'Clipper', 'green'),
+                          (104,'Marine', 'red');
+select * from boats;
+
+create table reserves(
+sid int,
+bid int,
+day date,
+primary key (sid,bid),
+foreign key (sid) references sailors (sid),
+foreign key (bid) references boats (bid));
+
+insert into reserves values (22,101,'1998-10-10');
+insert into reserves values (22,102,'1998-10-10'),
+							(22,103,'1998-08-10'),
+                            (22,104,'1998-07-10'),
+                            (31,102,'1998-10-11'),
+                            (31,103,'1998-06-11'),
+                            (31,104,'1998-12-11'),
+                            (64,101,'1998-05-09'),
+                            (64,102,'1998-08-09'),
+                            (74,103,'1998-08-09');
+
+select * from reserves;
+#1
+select sname
+from sailors
+where rating>7;
+#2
+select sname
+from sailors
+where sid in (select sid
+			from reserves
+            where bid=103);
+#3
+select color
+from boats
+where bid in (select bid
+			  from reserves
+              where sid in (select sid
+							from sailors
+                            where sname='Lubber'));
+#4
+select sname, rating*1.1
+from sailors
+where sid in (select sid
+			  from reserves
+              group by day,sid having count(bid)>=2);
+  #5            
+select sname, age
+from sailors
+where sname like 'b%b';
+#6
+select sname
+from sailors
+where sid in (select sid
+		     from reserves
+             where bid= 102 and bid = 104);
+
+#8
+select sid
+from sailors
+where sid in (select sid
+				from reserves
+                where bid=104)
+UNION
+select sid
+from sailors
+where rating=10;
+
+#9
+select sname
+from sailors
+where sid in (select sid
+				from reserves
+                where bid=103);
+
+#10
+select sname
+from sailors
+where rating > (select rating
+				from sailors
+                where sname='Horatio');
+
+#11 same as 6th
+
+#12
+select sname
+from sailors
+where sid in (select sid
+			  from reserves
+              group by sid, sid having count(bid)>=4);
+
+#13
+select sname 
+from sailors
+where age > (select max(age)
+			from sailors
+            where rating=10);
+
+#14
+select rating,min(age)
+from sailors
+group by rating;
