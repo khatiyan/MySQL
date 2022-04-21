@@ -1,0 +1,146 @@
+create database practice5;
+use practice5;
+CREATE TABLE flights(
+flno int ,
+from_ varchar(20),
+to_ varchar(20),
+distance int,
+departs time,
+arrives time,
+primary key(flno) );
+
+desc flights;
+create table aircraft(
+aid int primary key,
+aname varchar(20),
+cruisingrange int);
+desc aircraft;
+
+create table employees(
+eid int primary key,
+ename varchar(20),
+salary int);
+desc employees;
+
+create table certified(
+eid int,
+aid int,
+foreign key(eid) references employees(eid),
+foreign key(aid) references aircraft(aid),
+primary key(eid,aid));
+desc certified;
+
+insert into aircraft values (01,'Boeing', 500);
+insert into aircraft values (02,'Airbus', 900);
+
+insert into employees values (01, 'abhinam', 150000);
+insert into employees values (02, 'abhinav', 160000);
+insert into employees values (03, 'mayank', 120000);
+
+insert into certified values (01,01);
+insert into certified values (01,02);
+insert into certified values (02,02);
+
+#1
+select eid 
+from certified
+where aid in (select aid
+			from aircraft
+            where aname='Boeing');
+
+#2
+select ename
+from employees
+where eid in (select eid
+				from certified
+                where aid in (select aid
+								from aircraft
+                                where aname='Boeing'));
+
+insert into flights values (01, 'Delhi', 'Madras', 500, '08:10:20', '10:20:20');
+insert into flights values (02, 'Mumbai', 'Madras', 500, '09:10:20', '10:20:20');
+
+#3
+select aid
+from aircraft
+where cruisingrange in (select distance
+						from flights
+                        where from_='Delhi' and to_='Madras');
+
+
+insert into flights values (03, 'Mumbai', 'Madras', 900, '09:10:20', '10:20:20');
+#4
+select flno
+from flights
+where distance in (select cruisingrange
+					from aircraft
+                    where aid in (select aid
+									from certified
+                                    where eid in (select eid
+													from employees
+                                                    where salary>100000)));
+
+insert into aircraft values (03,'Airbus', 3300);
+insert into aircraft values (04,'Boeing', 3100);
+
+-- insert into certified values (01,03);
+insert into certified values (03,04);
+insert into certified values (02,04);
+insert into certified values (01,03);
+insert into certified values (02,03);
+
+
+#5
+-- select ename
+-- from employees
+-- where eid in (select eid
+-- 				from certified
+--                 where aid in (select aid
+-- 								from aircraft
+--                                 where cruisingrange >3000 )) and eid  not in (select eid
+-- 																			from certified
+--                                                                             where aid in (select aid
+-- 																							from aircraft
+--                                                                                             where aname='Boeing'));
+
+select ename
+from employees
+where eid in (select eid
+				from certified
+                where aid in (select aid
+								from aircraft
+                                where cruisingrange>3000 and aname <> 'Boeing'));
+
+select * from certified;
+
+#6
+select eid
+from employees
+where salary in (select max(salary)
+				from employees);
+
+#7
+select eid 
+from employees
+where salary in (select max(salary)
+				from employees
+                where salary <> (select max(salary)
+								from employees));
+
+#8
+select eid
+from certified as c1
+group by c1.eid having count(*) = (select max
+									from (select count
+											from certified as c2
+                                            group by c2.eid));
+
+
+#9
+select eid
+from certified
+group by aid having count(*) = 3;
+
+#10
+select sum(salary)
+from employees;
